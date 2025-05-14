@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Doadores de Sangue</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select { margin-top: 5px; padding: 5px; }
+    .erro { color: red; }
+    .doador { margin-top: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Cadastro de Doadores de Sangue</h1>
+  
+  <form id="formCadastro">
+    <label>Nome:
+      <input type="text" id="nome" required>
+    </label>
+    <label>Idade:
+      <input type="number" id="idade" min="18" required>
+    </label>
+    <label>Tipo Sanguíneo:
+      <select id="tipo">
+        <option value="">Selecione</option>
+        <option>A+</option>
+        <option>A-</option>
+        <option>B+</option>
+        <option>B-</option>
+        <option>AB+</option>
+        <option>AB-</option>
+        <option>O+</option>
+        <option>O-</option>
+      </select>
+    </label>
+    <label>
+      <input type="checkbox" id="ativo">
+      Doador ativo
+    </label>
+    <button type="submit">Cadastrar</button>
+    <p class="erro" id="mensagemErro"></p>
+  </form>
+
+  <h2>Lista de Doadores</h2>
+  <div id="listaDoadores"></div>
+
+  <script>
+    class Doador {
+      constructor(nome, idade, tipoSanguineo, ativo) {
+        this.nome = String(nome).trim();
+        this.idade = Number(idade);
+        this.tipoSanguineo = String(tipoSanguineo).toUpperCase();
+        this.ativo = Boolean(ativo);
+      }
+
+      exibirInfo() {
+        return `Nome: ${this.nome}, Idade: ${this.idade}, Tipo: ${this.tipoSanguineo}, Ativo: ${this.ativo ? 'Sim' : 'Não'}`;
+      }
+    }
+
+    class BancoDeSangue {
+      constructor() {
+        this.doadores = [];
+      }
+
+      tiposValidos() {
+        return ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+      }
+
+      validar(nome, idade, tipo) {
+        if (!nome.trim()) {
+          return "Nome não pode estar vazio.";
+        }
+        if (isNaN(idade) || idade < 18) {
+          return "Idade deve ser um número maior ou igual a 18.";
+        }
+        if (!this.tiposValidos().includes(tipo.toUpperCase())) {
+          return "Tipo sanguíneo inválido.";
+        }
+        return null; // nenhum erro
+      }
+
+      cadastrarDoador(nome, idade, tipoSanguineo, ativo) {
+        const erro = this.validar(nome, idade, tipoSanguineo);
+        if (erro) {
+          return erro;
+        }
+        const novo = new Doador(nome, idade, tipoSanguineo, ativo);
+        this.doadores.push(novo);
+        return null;
+      }
+
+      listarHTML() {
+        return this.doadores.map(d => `<div class="doador">${d.exibirInfo()}</div>`).join('');
+      }
+    }
+
+    // Instância do sistema
+    const banco = new BancoDeSangue();
+
+    const form = document.getElementById("formCadastro");
+    const nome = document.getElementById("nome");
+    const idade = document.getElementById("idade");
+    const tipo = document.getElementById("tipo");
+    const ativo = document.getElementById("ativo");
+    const lista = document.getElementById("listaDoadores");
+    const mensagemErro = document.getElementById("mensagemErro");
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+      const erro = banco.cadastrarDoador(nome.value, idade.value, tipo.value, ativo.checked);
+      
+      if (erro) {
+        mensagemErro.textContent = erro;
+      } else {
+        mensagemErro.textContent = "";
+        lista.innerHTML = banco.listarHTML();
+        form.reset(); // limpa os campos
+      }
+    });
+  </script>
+</body>
+</html>
